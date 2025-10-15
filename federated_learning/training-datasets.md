@@ -41,7 +41,7 @@ This document provides a comprehensive list of datasets for training the Federat
 
 ---
 
-### SWaT (Secure Water Treatment)
+### SWaT (Secure Water Treatment) ⭐ NETWORK DATA AVAILABLE
 
 **Source:** iTrust, Singapore University of Technology and Design
 
@@ -50,17 +50,24 @@ This document provides a comprehensive list of datasets for training the Federat
 - 7 days normal operation
 - 4 days under attack
 - Real water treatment testbed
+- **Network traffic logs** ✅
 
 **Sensors:**
 - 51 sensors and actuators
 - Temperature, pressure, flow, level sensors
 - Pump and valve actuators
 
+**Network Features Available:**
+- Network logs
+- Modbus/CIP traffic
+- Connection patterns
+- Protocol anomalies
+
 **Attacks Included:**
 - 36 attack scenarios
 - Single-stage and multi-stage attacks
 - Physical process attacks
-- Network attacks
+- Network attacks (reconnaissance, DoS)
 
 **Size:** ~40GB
 
@@ -72,10 +79,12 @@ This document provides a comprehensive list of datasets for training the Federat
 - LSTM training (large dataset)
 - Multi-stage attack sequences
 - Physics rules validation
+- Network + process correlation
+- Long-term behavioral analysis
 
 ---
 
-### WADI (Water Distribution)
+### WADI (Water Distribution) ⭐ NETWORK DATA AVAILABLE
 
 **Source:** iTrust, Singapore University of Technology and Design
 
@@ -84,16 +93,24 @@ This document provides a comprehensive list of datasets for training the Federat
 - 14 days normal operation
 - 2 days under attack
 - Water distribution network
+- **Network traffic logs** ✅
 
 **Sensors:**
 - 123 sensors and actuators
 - More complex than SWaT
 - Multiple interconnected processes
 
+**Network Features Available:**
+- Network logs
+- Protocol traffic
+- Connection patterns
+- Multi-segment network data
+
 **Attacks Included:**
 - 15 attack scenarios
 - Coordinated attacks
 - Stealthy attacks
+- Network-based reconnaissance
 
 **Size:** ~50GB
 
@@ -105,28 +122,46 @@ This document provides a comprehensive list of datasets for training the Federat
 - Advanced LSTM training
 - Complex attack patterns
 - Federated learning scenarios (multiple processes)
+- Network + process correlation
+- Multi-segment network analysis
 
 ---
 
-### HAI (Hardware-in-the-Loop Augmented ICS)
+### HAI (Hardware-in-the-Loop Augmented ICS) ⭐ RECOMMENDED FOR NETWORK DATA
 
-**Source:** Korea University
+**Source:** iTrust, Singapore University of Technology and Design
 
 **Content:**
-- 4 industrial processes
-- Boiler system
-- Turbine system
-- Pump system
-- Water treatment
+- 4 industrial processes (boiler, turbine, pump, water treatment)
+- **Network traffic (PCAP files)** ✅
+- **Process sensor data** ✅
+- 38 attack scenarios
+- Both normal and attack operations
+
+**Network Features Available:**
+- Packet captures (PCAP format)
+- Protocol data (Modbus, CIP/EtherNet/IP)
+- Packet size, inter-arrival time
+- Source/destination IPs
+- Protocol distribution
+- Connection attempts
+
+**Process Features Available:**
+- Temperature, pressure, flow sensors
+- Valve positions, pump status
+- Setpoint values
+- Control signals
 
 **Attacks Included:**
-- 28 attack scenarios
-- Hardware-in-the-loop attacks
+- 38 attack scenarios
+- Network-based attacks (port scans, DoS)
+- Process manipulation attacks
+- Multi-stage attacks
 - Cyber-physical attacks
 
 **Protocols:**
-- Modbus
-- EtherNet/IP
+- Modbus/TCP
+- EtherNet/IP (CIP)
 
 **Size:** ~15GB
 
@@ -135,13 +170,113 @@ This document provides a comprehensive list of datasets for training the Federat
 **Link:** https://github.com/icsdataset/hai
 
 **Best For:**
+- **Network + process correlation** ⭐
+- Training LSTM with network features
+- Training Isolation Forest with network features
 - Multi-protocol training
 - Cyber-physical attack detection
 - Diverse attack scenarios
 
+**Why Best for Your Project:**
+- Contains BOTH network traffic AND sensor data
+- 38 different attacks (more than most datasets)
+- Well-documented and maintained
+- Easy to access (GitHub)
+- Recent dataset (2020)
+- Perfect for 18-feature model (10 process + 8 network)
+
 ---
 
-## 2. Network Traffic Datasets
+## 2. Network-Specific ICS Datasets
+
+### TON_IoT Dataset
+
+**Source:** UNSW Canberra Cyber
+
+**Content:**
+- IoT and ICS network traffic
+- **Full packet captures (PCAP)** ✅
+- Telemetry data
+- 9 attack types
+
+**Network Features Available:**
+- Packet size
+- Inter-arrival time
+- Protocol distribution
+- Source/destination IPs and ports
+- Bytes per second
+- Packets per second
+- Connection attempts
+- Failed connections
+
+**Attacks Included:**
+- DDoS attacks
+- Ransomware
+- Backdoor
+- Injection attacks
+- Scanning
+- XSS
+- Password attacks
+- MITM
+
+**Size:** ~30GB
+
+**Access:** Free, requires registration
+
+**Link:** https://research.unsw.edu.au/projects/toniot-datasets
+
+**Best For:**
+- Network anomaly detection
+- Training Isolation Forest with network features
+- Training LSTM with network features
+- IoT/ICS hybrid environments
+- Multiple attack types
+
+---
+
+### CICIDS2017 (with ICS Extension)
+
+**Source:** Canadian Institute for Cybersecurity
+
+**Content:**
+- Network traffic (PCAP)
+- **80+ pre-extracted network features** ✅
+- Multiple attack types
+- Labeled data
+
+**Network Features Available (Pre-extracted):**
+- Flow duration
+- Packet length (mean, std, min, max)
+- Inter-arrival time (mean, std, min, max)
+- Packets per second
+- Bytes per second
+- Protocol flags
+- Active/idle time
+- Subflow features
+
+**Attacks Included:**
+- Brute Force
+- DoS/DDoS
+- Port Scan
+- Botnet
+- Web attacks
+- Infiltration
+
+**Size:** ~8GB
+
+**Access:** Free, direct download
+
+**Link:** https://www.unb.ca/cic/datasets/ids-2017.html
+
+**Best For:**
+- Pre-extracted network features (saves preprocessing time)
+- Network anomaly detection
+- Fast prototyping
+- Benchmark comparisons
+
+---
+
+## 3. Network Traffic Datasets (Protocol-Specific)
 
 ### 4SICS ICS Lab Dataset
 
@@ -692,6 +827,116 @@ data/
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** October 14, 2025  
-**Status:** Ready for Use
+## 13. Network Feature Extraction Guide
+
+### Extracting Network Features from PCAP Files
+
+**Tools:**
+- **Scapy** (Python) - Packet manipulation
+- **PyShark** (Python) - Wireshark wrapper
+- **tshark** (CLI) - Command-line Wireshark
+- **CICFlowMeter** - Pre-built feature extractor
+
+**Example: Extract 8 Network Features**
+
+```python
+import pyshark
+import pandas as pd
+from collections import defaultdict
+
+def extract_network_features(pcap_file, window_seconds=1):
+    """Extract 8 network features per second"""
+    
+    cap = pyshark.FileCapture(pcap_file)
+    
+    features = defaultdict(lambda: {
+        'packets': 0,
+        'bytes': 0,
+        'src_ips': set(),
+        'dst_ips': set(),
+        'protocols': defaultdict(int),
+        'packet_sizes': [],
+        'inter_arrival_times': [],
+        'failed_connections': 0
+    })
+    
+    prev_time = None
+    
+    for packet in cap:
+        timestamp = float(packet.sniff_timestamp)
+        window = int(timestamp)  # 1-second windows
+        
+        # Packets per second
+        features[window]['packets'] += 1
+        
+        # Bytes per second
+        features[window]['bytes'] += int(packet.length)
+        
+        # Unique IPs
+        if hasattr(packet, 'ip'):
+            features[window]['src_ips'].add(packet.ip.src)
+            features[window]['dst_ips'].add(packet.ip.dst)
+        
+        # Protocol distribution
+        if hasattr(packet, 'highest_layer'):
+            features[window]['protocols'][packet.highest_layer] += 1
+        
+        # Packet size
+        features[window]['packet_sizes'].append(int(packet.length))
+        
+        # Inter-arrival time
+        if prev_time:
+            iat = (timestamp - prev_time) * 1000  # ms
+            features[window]['inter_arrival_times'].append(iat)
+        prev_time = timestamp
+        
+        # Failed connections (TCP RST, ICMP unreachable)
+        if hasattr(packet, 'tcp') and packet.tcp.flags_reset == '1':
+            features[window]['failed_connections'] += 1
+    
+    # Convert to DataFrame
+    rows = []
+    for window, data in features.items():
+        rows.append({
+            'timestamp': window,
+            'packets_per_sec': data['packets'],
+            'bytes_per_sec': data['bytes'],
+            'unique_src_ips': len(data['src_ips']),
+            'unique_dst_ips': len(data['dst_ips']),
+            'protocol_dist': len(data['protocols']),  # or ratio
+            'failed_connections': data['failed_connections'],
+            'avg_packet_size': sum(data['packet_sizes']) / len(data['packet_sizes']) if data['packet_sizes'] else 0,
+            'inter_arrival_variance': pd.Series(data['inter_arrival_times']).var() if data['inter_arrival_times'] else 0
+        })
+    
+    return pd.DataFrame(rows)
+
+# Usage
+network_features = extract_network_features('hai_attack.pcap')
+network_features.to_csv('network_features.csv', index=False)
+```
+
+### Recommended Dataset for Network Features
+
+**Priority 1: HAI Dataset** ⭐
+- Has both PCAP and sensor data
+- 38 attacks
+- Easy to access
+- Well-documented
+
+**Priority 2: TON_IoT**
+- Comprehensive network features
+- Multiple attack types
+- Good for network-only training
+
+**Priority 3: SWaT**
+- Large-scale
+- Network logs available
+- Requires registration
+
+---
+
+**Document Version:** 1.1  
+**Last Updated:** October 15, 2025  
+**Status:** Ready for Use  
+**Changes:** Added network-specific datasets (HAI, TON_IoT, CICIDS2017) with detailed network feature information and extraction guide
