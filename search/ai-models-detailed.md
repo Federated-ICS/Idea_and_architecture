@@ -39,7 +39,7 @@ This document provides an in-depth explanation of all four detection models used
 **Architecture Details:**
 
 ```
-Input: 60 timesteps × 10 features
+Input: 60 timesteps × 18 features
        ↓
 ┌──────────────────────────────────┐
 │         ENCODER                  │
@@ -62,11 +62,11 @@ Input: 60 timesteps × 10 features
 │  LSTM Layer 2: 128 units         │
 │  (reconstructs sequence)         │
 │         ↓                        │
-│  Dense Layer: 10 units           │
+│  Dense Layer: 18 units           │
 │  (output layer)                  │
 └──────────────────────────────────┘
        ↓
-Output: 60 timesteps × 10 features
+Output: 60 timesteps × 18 features
        ↓
 Reconstruction Error (MSE)
 ```
@@ -75,7 +75,9 @@ Reconstruction Error (MSE)
 
 **Input:**
 - 60 timesteps (60 seconds at 1 Hz)
-- 10 features per timestep:
+- 18 features per timestep:
+
+**Process Features (10):**
   1. Temperature (°C)
   2. Pressure (psi)
   3. Flow rate (L/min)
@@ -87,6 +89,16 @@ Reconstruction Error (MSE)
   9. Error signal (deviation)
   10. Time of day (normalized)
 
+**Network Features (8):**
+  11. Packets per second
+  12. Bytes per second
+  13. Unique source IPs (count)
+  14. Unique destination IPs (count)
+  15. Protocol distribution (Modbus/DNP3/OPC-UA ratio)
+  16. Failed connection attempts
+  17. Average packet size (bytes)
+  18. Inter-arrival time variance (ms)
+
 **Output:**
 - Reconstruction error (MSE - Mean Squared Error)
 - Threshold: 95th percentile of training errors
@@ -94,15 +106,15 @@ Reconstruction Error (MSE)
 
 **Example:**
 ```
-Normal operation:
-Input: [300, 301, 299, 300, 302, ...]
-Reconstructed: [300.1, 300.9, 299.2, 300.1, 301.8, ...]
+Normal operation (temperature + packets/sec):
+Input: [300, 301, 299, 300, 302, ...] + [45, 47, 44, 46, 45, ...]
+Reconstructed: [300.1, 300.9, 299.2, 300.1, 301.8, ...] + [45.2, 46.8, 44.1, 45.9, 45.3, ...]
 Error: 0.15 (LOW - Normal)
 
-Attack (gradual drift):
-Input: [300, 302, 304, 306, 308, ...]
-Reconstructed: [300.1, 300.9, 301.2, 301.5, 301.8, ...]
-Error: 8.45 (HIGH - Anomaly!)
+Attack (gradual drift + network scan):
+Input: [300, 302, 304, 306, 308, ...] + [45, 67, 89, 112, 145, ...]
+Reconstructed: [300.1, 300.9, 301.2, 301.5, 301.8, ...] + [45.2, 46.1, 46.8, 47.2, 47.5, ...]
+Error: 12.87 (HIGH - Anomaly!)
 ```
 
 ### Training Process
@@ -190,6 +202,8 @@ After FL Round:
 - Stealthy attacks
 - Pattern changes over time
 - Multi-sensor correlation
+- Network-based behavioral attacks (slow scans, data exfiltration)
+- Correlated process + network anomalies
 
 ---
 
@@ -233,7 +247,9 @@ Anomaly stands alone:
 
 **Input:**
 - Single data point (no time window)
-- 10 features (same as LSTM):
+- 18 features:
+
+**Process Features (10):**
   1. Temperature
   2. Pressure
   3. Flow rate
@@ -245,6 +261,16 @@ Anomaly stands alone:
   9. Error signal
   10. Time of day
 
+**Network Features (8):**
+  11. Packets per second (current)
+  12. Bytes per second (current)
+  13. Unique source IPs (last second)
+  14. Unique destination IPs (last second)
+  15. Protocol type (encoded: Modbus=1, DNP3=2, OPC-UA=3, etc.)
+  16. Failed connection attempts (last second)
+  17. Packet size (current)
+  18. Inter-arrival time (ms)
+
 **Output:**
 - Anomaly score: -1 to 1
   - Score > 0.6 → Anomaly
@@ -253,12 +279,20 @@ Anomaly stands alone:
 **Example:**
 ```
 Normal operation:
-Temperature: 300°C, Pressure: 120 psi, Flow: 75 L/min
+Temperature: 300°C, Pressure: 120 psi, Flow: 75 L/min, Packets/sec: 45
 Anomaly Score: 0.15 (Normal)
 
-Sudden spike attack:
-Temperature: 380°C, Pressure: 120 psi, Flow: 75 L/min
+Sudden spike attack (process):
+Temperature: 380°C, Pressure: 120 psi, Flow: 75 L/min, Packets/sec: 45
 Anomaly Score: 0.95 (Anomaly!)
+
+Port scan attack (network):
+Temperature: 300°C, Pressure: 120 psi, Flow: 75 L/min, Packets/sec: 2847
+Anomaly Score: 0.98 (Anomaly!)
+
+Combined attack (process + network):
+Temperature: 380°C, Pressure: 120 psi, Flow: 75 L/min, Packets/sec: 2847
+Anomaly Score: 0.99 (Critical Anomaly!)
 ```
 
 ### Training Process
@@ -317,6 +351,9 @@ Anomaly Score: 0.95 (Anomaly!)
 - Immediate response needed
 - Single-point anomalies
 - Fast screening
+- Network-based attacks (port scans, DDoS, unusual traffic)
+- Protocol anomalies
+- Rapid network reconnaissance detection
 
 ---
 
@@ -353,6 +390,7 @@ IF pressure < 90 psi THEN WARNING_ALERT
 ```
 IF (temperature_now - temperature_1min_ago) > 10°C THEN WARNING_ALERT
 IF (pressure_now - pressure_1sec_ago) > 5 psi THEN CRITICAL_ALERT
+IF (packets_per_sec_now - packets_per_sec_1min_ago) > 1000 THEN WARNING_ALERT
 ```
 
 **3. Dependency Rules:**
@@ -365,6 +403,15 @@ IF temperature > setpoint + 20°C THEN WARNING_ALERT
 ```
 IF flow_rate > 0 AND valve_position == 0 THEN CRITICAL_ALERT
 IF pump_running == TRUE AND flow_rate == 0 THEN CRITICAL_ALERT
+```
+
+**5. Network Rules:**
+```
+IF packets_per_sec > 10000 THEN WARNING_ALERT
+IF unique_dest_ips > 100 THEN CRITICAL_ALERT (port scan)
+IF failed_connections > 50 THEN WARNING_ALERT (brute force)
+IF unknown_protocol == TRUE THEN CRITICAL_ALERT
+IF packet_size > 1500 THEN WARNING_ALERT (fragmentation attack)
 ```
 
 ### Input/Output
@@ -412,6 +459,26 @@ rules:
     condition: "valve.inlet == OPEN AND pump.main == OFF"
     severity: "CRITICAL"
     message: "Valve open without pump running"
+  
+  - id: "NETWORK-PORT-SCAN"
+    sensor: "network.unique_dest_ips"
+    condition: "value > 100"
+    window: "1_second"
+    severity: "CRITICAL"
+    message: "Possible port scan detected"
+  
+  - id: "NETWORK-TRAFFIC-SPIKE"
+    sensor: "network.packets_per_sec"
+    condition: "value > 10000"
+    severity: "WARNING"
+    message: "Abnormal network traffic volume"
+  
+  - id: "NETWORK-FAILED-AUTH"
+    sensor: "network.failed_connections"
+    condition: "value > 50"
+    window: "1_minute"
+    severity: "WARNING"
+    message: "Multiple failed connection attempts"
 ```
 
 ### Why No Federated Learning?
@@ -475,6 +542,9 @@ Facility C (Different Process):
 - Immediate critical alerts
 - Deterministic detection
 - Backup detection layer
+- Known network attack patterns (port scans, DDoS)
+- Protocol violations
+- Traffic threshold enforcement
 
 ---
 
@@ -708,9 +778,17 @@ GNN:             High        ████████████████
 
 ```
 Physics Rules:    None (domain knowledge)
-Isolation Forest: 10,000+ samples
-LSTM:            7+ days of data
+Isolation Forest: 10,000+ samples (process + network)
+LSTM:            7+ days of data (process + network)
 GNN:             Attack sequences (100+)
+```
+
+### Feature Types
+
+```
+Process Features:  10 features (sensor + control data)
+Network Features:  8 features (traffic + protocol data)
+Total Features:    18 features (for LSTM & Isolation Forest)
 ```
 
 ---
@@ -769,7 +847,7 @@ def correlate_detections(detections):
 
 ### Example Attack Detection
 
-**Scenario: Gradual Drift Attack**
+**Scenario 1: Gradual Drift Attack (Process)**
 
 ```
 Time: 0:00 - Attack starts (300°C → 420°C over 60 seconds)
@@ -786,6 +864,44 @@ Correlation Engine:
 - Confidence: 0.95 (very high)
 - Severity: CRITICAL
 - GNN prediction: T0843 next (proactive defense)
+```
+
+**Scenario 2: Port Scan Attack (Network)**
+
+```
+Time: 0:00 - Attacker starts port scan (50 packets/sec → 3000 packets/sec)
+
+Time: 0:01 - Physics Rules: ALERT! (unique_dest_ips > 100)
+Time: 0:02 - Isolation Forest: ALERT! (packets/sec outlier)
+Time: 0:30 - LSTM: ALERT! (abnormal network pattern)
+Time: 0:30 - GNN: Predicts next step (T0800 Lateral Movement - 72% probability)
+
+Correlation Engine:
+- 3 sources detected: Physics, IF, LSTM
+- Confidence: 0.92 (high)
+- Severity: CRITICAL
+- GNN prediction: T0800 next (block lateral movement)
+```
+
+**Scenario 3: Combined Attack (Process + Network)**
+
+```
+Time: 0:00 - Multi-stage attack begins
+Time: 0:01 - Network reconnaissance (port scan)
+Time: 0:05 - Physics Rules: ALERT! (network anomaly)
+Time: 0:05 - Isolation Forest: ALERT! (network outlier)
+Time: 0:30 - Attacker gains access, modifies setpoints
+Time: 0:35 - LSTM: ALERT! (process + network behavioral anomaly)
+Time: 0:35 - GNN: Predicts T0836 (Modify Parameter - 85% probability)
+Time: 0:45 - Physics Rules: ALERT! (temperature violation)
+Time: 0:45 - Isolation Forest: ALERT! (process outlier)
+
+Correlation Engine:
+- 4 sources detected: Physics, IF, LSTM, GNN
+- Confidence: 0.98 (very high)
+- Severity: CRITICAL
+- Attack type: Multi-stage (reconnaissance → intrusion → manipulation)
+- GNN prediction: T0836 next (emergency shutdown recommended)
 ```
 
 ---
@@ -905,6 +1021,7 @@ Step 3: Distribute Updated Model
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** October 14, 2025  
-**Status:** Ready for Implementation
+**Document Version:** 1.1  
+**Last Updated:** October 15, 2025  
+**Status:** Ready for Implementation  
+**Changes:** Added network packet features to LSTM Autoencoder, Isolation Forest, and Physics Rules Engine

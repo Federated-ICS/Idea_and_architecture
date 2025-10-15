@@ -186,15 +186,17 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 **Purpose:** Detect behavioral anomalies (temporal patterns)
 
 **Architecture:**
-- Encoder: Input(60, 10) → LSTM(128) → LSTM(64)
-- Decoder: LSTM(64) → LSTM(128) → Output(60, 10)
+- Encoder: Input(60, 18) → LSTM(128) → LSTM(64)
+- Decoder: LSTM(64) → LSTM(128) → Output(60, 18)
 
 **Specifications:**
-- Input: 60 timesteps × 10 features (temperature, pressure, flow, etc.)
+- Input: 60 timesteps × 18 features
+  - **Process Features (10):** temperature, pressure, flow rate, valve position, pump status, setpoint temperature, setpoint pressure, control signal, error signal, time of day
+  - **Network Features (8):** packets/sec, bytes/sec, unique source IPs, unique dest IPs, protocol distribution, failed connections, avg packet size, inter-arrival time variance
 - Output: Reconstruction error (MSE)
 - Threshold: 95th percentile of training errors
 - Latency: < 30 seconds
-- Data Source: IoTDB (60-second time windows)
+- Data Source: IoTDB (60-second time windows for both process and network data)
 
 #### Isolation Forest
 **Purpose:** Detect point anomalies (sudden outliers)
@@ -203,11 +205,13 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 - Algorithm: sklearn IsolationForest
 - Estimators: 100 trees
 - Contamination: 0.01 (1% expected anomalies)
-- Input: Single data point (10 features)
+- Input: Single data point (18 features)
+  - **Process Features (10):** temperature, pressure, flow rate, valve position, pump status, setpoint temperature, setpoint pressure, control signal, error signal, time of day
+  - **Network Features (8):** packets/sec, bytes/sec, unique source IPs, unique dest IPs, protocol type, failed connections, packet size, inter-arrival time
 - Output: Anomaly score (-1 to 1)
 - Threshold: Score > 0.6
 - Latency: < 5 seconds
-- Data Source: IoTDB (latest values)
+- Data Source: IoTDB (latest values for both process and network)
 
 #### Physics Rules Engine
 **Purpose:** Validate against safety constraints
@@ -216,11 +220,13 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 - Range checks (temperature, pressure limits)
 - Rate-of-change limits (sudden spikes)
 - Dependency rules (valve/pump coordination)
+- Network rules (port scans, traffic spikes, failed auth attempts)
 
 **Specifications:**
 - Latency: < 1 second (rule evaluation)
 - Severity levels: CRITICAL, WARNING, INFO
 - Configurable per facility
+- Network rules: port scan detection (unique_dest_ips > 100), traffic spikes (packets/sec > 10000), brute force (failed_connections > 50)
 
 #### Correlation Engine
 **Purpose:** Combine signals from all 3 detection methods
@@ -344,12 +350,22 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 - Generate normal operation patterns (sine waves, steady states)
 - Inject attack scenarios on demand
 - Dual-write to Kafka and IoTDB
+- Generate network traffic metrics
 
 **Sensor Types:**
 - Temperature (280-320°C normal range)
 - Pressure (100-150 psi normal range)
 - Flow rate (variable)
 - Valve positions (binary/percentage)
+
+**Network Metrics:**
+- Packets per second (30-60 normal range)
+- Bytes per second (variable)
+- Unique source/dest IPs (1-5 normal range)
+- Protocol distribution (Modbus primary)
+- Failed connection attempts (0-2 normal range)
+- Packet size (64-1500 bytes)
+- Inter-arrival time (10-50ms)
 
 **Attack Scenarios:**
 1. **Sudden Spike Attack** - Isolation Forest detection
@@ -361,9 +377,15 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
    - Behavioral pattern change
    - Triggers within 30 seconds
 
-3. **Multi-Stage Attack** - GNN prediction
-   - Discovery → Lateral Movement → Program Download
-   - Demonstrates attack prediction capability
+3. **Port Scan Attack** - Network-based detection
+   - Packets/sec: 50 → 3000
+   - Unique dest IPs: 5 → 250
+   - Triggers Physics Rules (< 1 sec), Isolation Forest (< 5 sec), LSTM (< 30 sec)
+
+4. **Multi-Stage Attack** - GNN prediction
+   - Network reconnaissance (port scan) → Lateral Movement → Program Download
+   - Demonstrates combined process + network detection
+   - Shows attack prediction capability
 
 ---
 
@@ -375,7 +397,9 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 
 **Structure:**
 - 3 databases: root.facility_a, root.facility_b, root.facility_c
-- Timeseries per sensor: temperature, pressure, flow_rate, valve_position
+- Timeseries per sensor:
+  - **Process:** temperature, pressure, flow_rate, valve_position, pump_status, setpoint_temp, setpoint_pressure, control_signal, error_signal
+  - **Network:** packets_per_sec, bytes_per_sec, unique_src_ips, unique_dest_ips, protocol_dist, failed_connections, avg_packet_size, inter_arrival_time
 - Encoding: GORILLA (float), RLE (int)
 - Compression: SNAPPY
 
@@ -384,11 +408,12 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 - Fast time-range queries
 - Built-in downsampling and aggregation
 - Handles high-frequency sensor data (1Hz+)
+- Unified storage for process and network metrics
 
 **Query Patterns:**
-- Recent data for LSTM: Last 60 seconds
-- Latest values for Isolation Forest: Last reading
-- Historical analysis: Time range queries
+- Recent data for LSTM: Last 60 seconds (18 features)
+- Latest values for Isolation Forest: Last reading (18 features)
+- Historical analysis: Time range queries for both process and network data
 
 ### PostgreSQL Tables
 
@@ -455,7 +480,7 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 
 ## Demo Scenario Implementations
 
-### Scenario 1: Multi-Layered Detection + FL
+### Scenario 1: Multi-Layered Detection + FL (Process Attack)
 
 **Steps:**
 1. Show normal operation (30 seconds)
@@ -485,30 +510,66 @@ Demonstrate that federated learning enables collaborative ICS threat detection w
 
 **Key Message:** "One facility's experience protects all others within hours"
 
-### Scenario 2: Attack Prediction
+### Scenario 1b: Network-Based Attack Detection
 
 **Steps:**
-1. Inject discovery technique (T0846)
+1. Show normal network traffic (30 seconds) - 45 packets/sec, 5 unique IPs
+2. Inject port scan attack on Facility A (3000 packets/sec, 250 unique dest IPs)
+3. Wait for detections (30 seconds)
+   - Physics Rules detect (1 sec) - unique_dest_ips > 100
+   - Isolation Forest detects (2 sec) - packets/sec outlier
+   - LSTM detects (30 sec) - abnormal network pattern
+4. Correlation creates high-confidence alert
+5. Trigger FL round
+6. Wait for FL completion (5 minutes)
+7. Replay port scan on Facility B
+8. Verify immediate detection by all methods
+
+**Expected Timeline:**
+- 0:00 - Normal network traffic
+- 0:30 - Port scan on Facility A
+- 0:31 - Physics Rules alert
+- 0:32 - Isolation Forest alert
+- 1:00 - LSTM alert
+- 1:05 - Correlated alert (3/3 sources)
+- 1:10 - FL round triggered
+- 6:10 - FL round complete
+- 6:15 - Port scan on Facility B
+- 6:16 - Immediate detection (all methods)
+
+**Total Duration:** ~7 minutes
+
+**Key Message:** "Network-level threats detected and shared across facilities"
+
+### Scenario 2: Attack Prediction (Multi-Stage)
+
+**Steps:**
+1. Inject network reconnaissance (T0846 - port scan detected)
 2. Wait for detection (10 seconds)
 3. GNN generates prediction
+   - T0800 (Lateral Movement) - 72% probability
    - T0843 (Program Download) - 67% probability
-   - T0800 (Lateral Movement) - 23% probability
    - T0858 (Change Operating Mode) - 10% probability
 4. Dashboard shows predicted attack path
 5. Wait for predicted timeframe (45 seconds)
-6. Attacker proceeds with T0843
-7. Prediction validated
+6. Attacker proceeds with T0800 (lateral movement detected via network anomaly)
+7. GNN updates prediction: T0843 now 85% probability
+8. Attacker proceeds with T0843 (program download)
+9. Prediction validated
 
 **Expected Timeline:**
-- 0:00 - Discovery (T0846)
+- 0:00 - Network reconnaissance (T0846 - port scan)
+- 0:01 - Physics Rules detect port scan
 - 0:10 - Detection and alert
-- 0:15 - GNN prediction displayed
-- 1:00 - Attacker proceeds with T0843
-- 1:10 - Prediction validated
+- 0:15 - GNN prediction displayed (T0800 - 72%)
+- 1:00 - Attacker proceeds with T0800 (lateral movement)
+- 1:05 - Detection and updated prediction (T0843 - 85%)
+- 1:45 - Attacker proceeds with T0843 (program download)
+- 1:50 - Prediction validated
 
 **Total Duration:** ~2 minutes
 
-**Key Message:** "Don't just react to attacks - predict and prevent them"
+**Key Message:** "Don't just react to attacks - predict and prevent them. Network + process correlation enables proactive defense"
 
 ---
 
@@ -858,6 +919,7 @@ By eliminating non-essential components and focusing on core functionality, we r
 
 ---
 
-**Document Version:** 1.0  
-**Last Updated:** October 14, 2025  
-**Status:** Ready for Implementation
+**Document Version:** 1.1  
+**Last Updated:** October 15, 2025  
+**Status:** Ready for Implementation  
+**Changes:** Added network packet features (8 features) to LSTM Autoencoder, Isolation Forest, and Physics Rules Engine. Updated demo scenarios to include network-based attack detection.
