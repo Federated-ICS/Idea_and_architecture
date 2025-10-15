@@ -1,0 +1,718 @@
+\documentclass[12pt,a4paper,landscape]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+
+\geometry{margin=0.5in}
+
+\definecolor{headercolor}{RGB}{51, 102, 153}
+\definecolor{rowcolor1}{RGB}{242, 242, 242}
+\definecolor{rowcolor2}{RGB}{255, 255, 255}
+
+\begin{document}
+
+\begin{center}
+    {\Huge \textbf{Technology Comparison Tables}}\\[0.3cm]
+    {\Large Federated ICS Threat Correlation Engine}\\[0.2cm]
+    {\large Technology Stack Analysis \& Alternatives}\\[0.5cm]
+\end{center}
+
+\section*{1. Machine Learning Frameworks}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Use Case}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Use Case}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{TensorFlow 2.x} & 
+Production-ready, TF Federated, Large ecosystem, Good documentation & 
+Steeper learning curve, Verbose code & 
+LSTM Autoencoder, FL infrastructure & 
+\textbf{CHOSEN:} Best FL support, production stability \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{PyTorch 2.x} & 
+Pythonic, Easy debugging, Research-friendly, Dynamic graphs & 
+Less production tooling, Smaller FL ecosystem & 
+GNN (PyTorch Geometric), Alternative for LSTM & 
+\textbf{CHOSEN:} Best for GNN, flexible research \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{scikit-learn} & 
+Simple API, Fast prototyping, Well-tested algorithms & 
+No deep learning, No GPU support & 
+Isolation Forest, Traditional ML & 
+\textbf{CHOSEN:} Perfect for Isolation Forest \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{JAX} & 
+Fast, Functional, Auto-differentiation & 
+Smaller ecosystem, Less mature & 
+High-performance computing & 
+\textbf{NOT CHOSEN:} Too new, limited FL support \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{MXNet} & 
+Efficient, Multi-language & 
+Declining community, Less documentation & 
+Distributed training & 
+\textbf{NOT CHOSEN:} Declining adoption \\
+\hline
+\end{longtable}
+
+\section*{2. Federated Learning Frameworks}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Features}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Features}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Flower (flwr)} & 
+Framework-agnostic, Easy to use, Active development, Good docs & 
+Newer framework, Smaller community & 
+TF/PyTorch/sklearn support, Simulation mode & 
+\textbf{CHOSEN:} Best balance of features \& ease \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{TensorFlow Federated} & 
+Google-backed, Research-grade, Strong privacy & 
+TF-only, Complex API, Steep learning curve & 
+Differential privacy, Secure aggregation & 
+\textbf{CHOSEN:} For TF models, privacy features \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{PySyft} & 
+Privacy-focused, Encrypted computation, Research-oriented & 
+Complex setup, Performance overhead & 
+Homomorphic encryption, MPC & 
+\textbf{NOT CHOSEN:} Too complex for production \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{FedML} & 
+Full-stack, Mobile support, Cloud integration & 
+Less mature, Limited documentation & 
+Edge devices, IoT & 
+\textbf{NOT CHOSEN:} Overkill for our use case \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{FATE} & 
+Enterprise-grade, Banking sector, Strong security & 
+Complex, Heavy, Chinese-focused & 
+Financial applications & 
+\textbf{NOT CHOSEN:} Too heavyweight \\
+\hline
+\end{longtable}
+
+\section*{3. Message Brokers}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Technology}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Technology}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Apache Kafka} & 
+High throughput, Persistent, Replay capability, Mature & 
+Complex setup, Resource-heavy & 
+100K+ msg/s, <10ms latency & 
+\textbf{CHOSEN:} Industry standard, proven at scale \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{RabbitMQ} & 
+Easy setup, Flexible routing, Good for RPC & 
+Lower throughput, No replay & 
+10K msg/s, <50ms latency & 
+\textbf{NOT CHOSEN:} Insufficient throughput \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Apache Pulsar} & 
+Multi-tenancy, Geo-replication, Tiered storage & 
+Newer, Smaller community & 
+Similar to Kafka & 
+\textbf{NOT CHOSEN:} Less mature ecosystem \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Redis Streams} & 
+Simple, Fast, In-memory & 
+Limited persistence, No clustering & 
+Very fast, but limited & 
+\textbf{NOT CHOSEN:} Not suitable for high volume \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{NATS} & 
+Lightweight, Fast, Cloud-native & 
+Limited persistence, Simpler features & 
+Very fast, low latency & 
+\textbf{NOT CHOSEN:} Lacks persistence features \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section*{4. Time-Series Databases}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Database}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Database}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Apache IoTDB} & 
+IoT-optimized, High compression, SQL-like, Open-source & 
+Smaller community, Less tooling & 
+1M points/s, 10:1 compression & 
+\textbf{CHOSEN:} Best for IoT/ICS use case \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{InfluxDB} & 
+Popular, Good docs, InfluxQL, Grafana integration & 
+Clustering costs money, License changes & 
+High performance & 
+\textbf{NOT CHOSEN:} Licensing concerns \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{TimescaleDB} & 
+PostgreSQL extension, SQL, Mature & 
+PostgreSQL overhead, Less optimized & 
+Good, but slower & 
+\textbf{NOT CHOSEN:} Not optimized for IoT \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Prometheus} & 
+Monitoring-focused, Pull model, Alerting & 
+Short retention, Not for raw data & 
+Metrics-optimized & 
+\textbf{NOT CHOSEN:} For metrics, not raw data \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{QuestDB} & 
+Very fast, SQL, Time-series optimized & 
+Newer, Smaller community & 
+Extremely fast & 
+\textbf{NOT CHOSEN:} Too new, less proven \\
+\hline
+\end{longtable}
+
+\section*{5. Graph Databases}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Database}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Query Language}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Database}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Query Language}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Neo4j} & 
+Mature, Cypher query language, Excellent visualization, Large community & 
+Enterprise features cost, Memory-intensive & 
+Cypher (intuitive) & 
+\textbf{CHOSEN:} Industry leader, best tooling \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Amazon Neptune} & 
+Managed, AWS integration, Gremlin \& SPARQL & 
+Vendor lock-in, Cost & 
+Gremlin, SPARQL & 
+\textbf{NOT CHOSEN:} Cloud-only, vendor lock-in \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{ArangoDB} & 
+Multi-model, Flexible, Good performance & 
+Smaller community, Less graph-focused & 
+AQL & 
+\textbf{NOT CHOSEN:} Not specialized for graphs \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{JanusGraph} & 
+Open-source, Scalable, Pluggable storage & 
+Complex setup, Less mature & 
+Gremlin & 
+\textbf{NOT CHOSEN:} Too complex to manage \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{TigerGraph} & 
+Very fast, Real-time analytics & 
+Commercial, Expensive & 
+GSQL & 
+\textbf{NOT CHOSEN:} Cost prohibitive \\
+\hline
+\end{longtable}
+
+\section*{6. Web Frameworks (Backend)}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Performance}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{FastAPI} & 
+Fast, Modern, Auto docs, Type hints, Async & 
+Newer, Smaller ecosystem & 
+Very fast (Starlette) & 
+\textbf{CHOSEN:} Best for APIs, modern Python \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Flask} & 
+Simple, Flexible, Large ecosystem, Mature & 
+Not async, Slower, Manual setup & 
+Moderate & 
+\textbf{NOT CHOSEN:} Lacks modern features \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Django} & 
+Full-featured, Admin panel, ORM, Batteries-included & 
+Heavy, Opinionated, Slower & 
+Moderate & 
+\textbf{NOT CHOSEN:} Too heavyweight for APIs \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Tornado} & 
+Async, WebSocket support, Long-polling & 
+Lower-level, Less modern & 
+Fast & 
+\textbf{NOT CHOSEN:} FastAPI is better \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Sanic} & 
+Very fast, Async, Flask-like & 
+Smaller community, Less stable & 
+Very fast & 
+\textbf{NOT CHOSEN:} FastAPI more mature \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section*{7. Frontend Frameworks}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Ecosystem}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Framework}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Ecosystem}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{React 18+} & 
+Huge ecosystem, Component-based, Virtual DOM, Hooks & 
+JSX learning curve, Boilerplate & 
+Massive (npm) & 
+\textbf{CHOSEN:} Industry standard, best libraries \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Vue 3} & 
+Easy to learn, Good docs, Composition API & 
+Smaller ecosystem, Less enterprise adoption & 
+Growing & 
+\textbf{NOT CHOSEN:} Smaller talent pool \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Angular} & 
+Full framework, TypeScript, Enterprise-ready & 
+Heavy, Steep learning curve, Verbose & 
+Large (enterprise) & 
+\textbf{NOT CHOSEN:} Too opinionated, heavy \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Svelte} & 
+No virtual DOM, Fast, Simple, Small bundle & 
+Smaller ecosystem, Less mature & 
+Growing & 
+\textbf{NOT CHOSEN:} Too new, risky for enterprise \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Solid.js} & 
+Very fast, Reactive, React-like & 
+Very small ecosystem, New & 
+Small & 
+\textbf{NOT CHOSEN:} Too new \\
+\hline
+\end{longtable}
+
+\section*{8. Container Orchestration}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Platform}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Use Case}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Platform}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Use Case}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Kubernetes} & 
+Industry standard, Huge ecosystem, Cloud-agnostic, Scalable & 
+Complex, Steep learning curve, Resource-heavy & 
+Production, enterprise & 
+\textbf{CHOSEN:} Production standard \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Docker Compose} & 
+Simple, Easy to learn, Good for dev & 
+Not for production, Limited scaling & 
+Development, testing & 
+\textbf{CHOSEN:} Development environment \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Docker Swarm} & 
+Simpler than K8s, Docker-native & 
+Less features, Smaller ecosystem, Declining & 
+Small deployments & 
+\textbf{NOT CHOSEN:} Declining adoption \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Nomad} & 
+Simple, Multi-workload, HashiCorp ecosystem & 
+Smaller community, Less features & 
+Mixed workloads & 
+\textbf{NOT CHOSEN:} Less mature for containers \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{OpenShift} & 
+Enterprise K8s, Red Hat support, Security & 
+Expensive, Opinionated & 
+Enterprise & 
+\textbf{NOT CHOSEN:} Cost, vendor lock-in \\
+\hline
+\end{longtable}
+
+\section*{9. Monitoring \& Observability}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Tool}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Focus}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Tool}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Focus}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Prometheus} & 
+Pull model, PromQL, Alerting, K8s integration & 
+Short retention, No logs & 
+Metrics & 
+\textbf{CHOSEN:} Industry standard for metrics \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Grafana} & 
+Beautiful dashboards, Multi-source, Alerting & 
+Not a data store & 
+Visualization & 
+\textbf{CHOSEN:} Best visualization tool \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{ELK Stack} & 
+Full-text search, Log aggregation, Kibana viz & 
+Resource-heavy, Complex & 
+Logs & 
+\textbf{CHOSEN:} Best for log aggregation \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Datadog} & 
+All-in-one, Easy setup, APM & 
+Expensive, Vendor lock-in & 
+Full observability & 
+\textbf{NOT CHOSEN:} Cost prohibitive \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{New Relic} & 
+APM, Easy to use, Good UI & 
+Expensive, Vendor lock-in & 
+Application monitoring & 
+\textbf{NOT CHOSEN:} Cost prohibitive \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{Jaeger} & 
+Distributed tracing, Open-source & 
+Only tracing, Setup complexity & 
+Tracing & 
+\textbf{CONSIDERED:} For future tracing needs \\
+\hline
+\end{longtable}
+
+\newpage
+
+\section*{10. Privacy \& Security Libraries}
+
+\begin{longtable}{|p{2.5cm}|p{3cm}|p{3cm}|p{3cm}|p{4cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Library}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Features}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endfirsthead
+
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Library}} & 
+\textcolor{white}{\textbf{Pros}} & 
+\textcolor{white}{\textbf{Cons}} & 
+\textcolor{white}{\textbf{Features}} & 
+\textcolor{white}{\textbf{Why Chosen/Not}} \\
+\hline
+\endhead
+
+\rowcolor{rowcolor1}
+\textbf{Opacus} & 
+PyTorch integration, Easy to use, Facebook-backed & 
+PyTorch-only & 
+Differential privacy & 
+\textbf{CHOSEN:} Best DP for PyTorch \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{TF Privacy} & 
+TensorFlow integration, Google-backed & 
+TF-only, Less flexible & 
+Differential privacy & 
+\textbf{CHOSEN:} Best DP for TensorFlow \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{CrypTen} & 
+Secure MPC, PyTorch-based & 
+Complex, Performance overhead & 
+Encrypted computation & 
+\textbf{CHOSEN:} For secure aggregation \\
+\hline
+
+\rowcolor{rowcolor2}
+\textbf{PySyft} & 
+Full privacy stack, Research-grade & 
+Complex, Heavy & 
+Homomorphic encryption, MPC & 
+\textbf{NOT CHOSEN:} Too complex \\
+\hline
+
+\rowcolor{rowcolor1}
+\textbf{Diffprivlib} & 
+IBM-backed, scikit-learn compatible & 
+Limited to sklearn & 
+DP for sklearn & 
+\textbf{CONSIDERED:} For Isolation Forest \\
+\hline
+\end{longtable}
+
+\section*{Summary: Technology Selection Criteria}
+
+\begin{center}
+\begin{tabular}{|p{4cm}|p{12cm}|}
+\hline
+\rowcolor{headercolor}
+\textcolor{white}{\textbf{Criterion}} & 
+\textcolor{white}{\textbf{Rationale}} \\
+\hline
+\textbf{Production Readiness} & Must be stable, well-tested, and proven in production environments \\
+\hline
+\textbf{Community \& Support} & Active community, good documentation, available expertise \\
+\hline
+\textbf{Performance} & Meets latency (<30s detection) and throughput (100K msg/s) requirements \\
+\hline
+\textbf{Scalability} & Horizontal scaling from 10 to 1000+ facilities \\
+\hline
+\textbf{Security} & Strong security features, regular updates, vulnerability management \\
+\hline
+\textbf{Integration} & Works well with other chosen technologies, standard protocols \\
+\hline
+\textbf{Cost} & Open-source preferred, avoid vendor lock-in, reasonable operational costs \\
+\hline
+\textbf{Maintainability} & Clear code, good tooling, easy to debug and monitor \\
+\hline
+\textbf{Future-Proof} & Active development, growing adoption, not declining \\
+\hline
+\textbf{Compliance} & Supports regulatory requirements (NERC CIP, IEC 62443, GDPR) \\
+\hline
+\end{tabular}
+\end{center}
+
+\vspace{1cm}
+
+\begin{center}
+\textit{All technology choices prioritize production readiness, security, and scalability\\
+while maintaining flexibility for future enhancements and avoiding vendor lock-in.}
+\end{center}
+
+\end{document}

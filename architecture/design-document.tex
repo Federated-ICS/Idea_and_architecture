@@ -1,0 +1,1232 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{float}
+
+% Layout
+\geometry{margin=1in}
+\setstretch{1.15}
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\textbf{Federated ICS Engine – Design Document}}
+\lhead{November 30 Deliverable}
+\rfoot{\thepage}
+
+% Section formatting
+\titleformat{\section}{\large\bfseries\color{blue!60!black}}{\thesection.}{1em}{}
+\titleformat{\subsection}{\bfseries\color{black}}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\bfseries\color{teal}}{\thesubsubsection}{1em}{}
+
+\begin{document}
+
+\begin{center}
+    \vspace*{0.5cm}
+    {\Huge \textbf{Federated ICS Threat Correlation Engine}}\\[0.4cm]
+    {\LARGE System Design Document}\\[0.3cm]
+    {\large November 30, 2025 Deliverable}\\[0.2cm]
+    \textit{Industrial Control Systems Security Team}\\[0.1cm]
+    \textbf{Date:} \today\\
+    \vspace{0.5cm}
+\end{center}
+
+\tableofcontents
+\newpage
+
+\section{Executive Overview}
+
+This design document outlines the technical architecture, technology stack, and implementation approach for delivering a demonstrable prototype of the Federated ICS Threat Correlation Engine by November 30, 2025.
+
+\subsection{Design Philosophy}
+
+The system design follows five core principles:
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{MVP First:} Focus on core features that demonstrate key capabilities
+    \item \textbf{Modular Architecture:} Independent components that can be developed in parallel
+    \item \textbf{Proven Technologies:} Use battle-tested open-source frameworks
+    \item \textbf{Demo-Driven:} Design for effective demonstration and evaluation
+    \item \textbf{Incremental Delivery:} Weekly milestones with working features
+\end{itemize}
+
+\subsection{Timeline}
+
+\textbf{Duration:} 6 weeks (October 13 - November 30, 2025)
+
+\textbf{Team Size:} 5 developers with mediocre technical background
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Technical concept documentation
+    \item System design and mockups
+    \item Working prototype with core features
+    \item Demo materials (video walkthrough and presentation)
+\end{itemize}
+
+\section{System Architecture}
+
+\subsection{High-Level Architecture}
+
+The system consists of six primary layers working together to provide comprehensive threat detection and collaborative defense:
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Presentation Layer:} Web dashboard, REST API, WebSocket for real-time updates
+    \item \textbf{Federated Learning Layer:} FL Server, FL Client, Privacy Engine
+    \item \textbf{Detection \& Analysis Layer:} LSTM Autoencoder, Isolation Forest, Physics Rules, GNN Prediction, Correlation Engine
+    \item \textbf{Messaging Layer:} Apache Kafka message bus for system-wide communication
+    \item \textbf{Storage Layer:} IoTDB (sensors), PostgreSQL (alerts), MongoDB (logs), Neo4j (graph)
+    \item \textbf{Data Sources Layer:} Modbus Parser, DNP3 Parser, Network Capture, Simulated Sensors
+\end{enumerate}
+
+\subsection{Component Interaction Flows}
+
+\subsubsection{Data Ingestion Flow}
+
+Industrial devices send data through protocol parsers to Kafka topics, which are then consumed by storage systems and detection models. This decoupled architecture allows for high throughput and fault tolerance.
+
+\subsubsection{Detection Flow}
+
+Data from Kafka is processed by three parallel detection methods: LSTM Autoencoder for behavioral anomalies, Isolation Forest for point anomalies, and Physics Rules Engine for process violations. Results are correlated to generate unified alerts stored in PostgreSQL and displayed on the dashboard.
+
+\subsubsection{Federated Learning Flow}
+
+The FL Server distributes the global model to all facility clients. Each client trains locally on their data, applies differential privacy noise to weight updates, and sends them back to the server. The server aggregates updates using coordinate-wise median and distributes the improved model.
+
+\subsubsection{Attack Prediction Flow}
+
+When an alert is generated, the system maps it to MITRE ATT\&CK techniques, queries the Neo4j graph database, and uses a Graph Neural Network to predict the attacker's next likely moves with probability scores.
+
+
+\section{Technology Stack}
+
+\subsection{Core Technologies with Justification}
+
+\subsubsection{Backend Framework}
+
+\textbf{Selected:} Python 3.11 with FastAPI
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Python 3.11 offers rich ML/data science ecosystem and rapid development capabilities
+    \item Approximately 25\% faster performance compared to Python 3.9
+    \item FastAPI provides modern async framework with auto-generated API documentation
+    \item Built-in WebSocket support for real-time updates
+\end{itemize}
+
+\textbf{Alternatives Considered:} Node.js (less ML support), Go (steeper learning curve)
+
+\subsubsection{Message Broker}
+
+\textbf{Selected:} Apache Kafka 3.6
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Industry standard for high-throughput message streaming
+    \item Message persistence and replay capabilities
+    \item Horizontal scalability
+    \item Configuration: 3 brokers for demo, 6 partitions per topic
+\end{itemize}
+
+\textbf{Alternatives Considered:} RabbitMQ (lower throughput), Redis Streams (less mature)
+
+\subsubsection{Time-Series Database}
+
+\textbf{Selected:} Apache IoTDB 1.2
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Purpose-built for IoT/ICS applications
+    \item Excellent compression ratios (10:1)
+    \item SQL-like query language for ease of use
+    \item Use case: Store sensor readings (temperature, pressure, flow rates)
+\end{itemize}
+
+\textbf{Alternatives Considered:} InfluxDB (commercial licensing concerns), TimescaleDB (PostgreSQL extension)
+
+\subsubsection{Relational Database}
+
+\textbf{Selected:} PostgreSQL 15
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Robust and reliable
+    \item JSONB support for flexible data structures
+    \item Excellent performance and scalability
+    \item Use case: Alerts, incidents, user management, configurations
+\end{itemize}
+
+\textbf{Alternatives Considered:} MySQL (less feature-rich), SQLite (not production-ready)
+
+\subsubsection{Document Database}
+
+\textbf{Selected:} MongoDB 7.0
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Flexible schema for semi-structured data
+    \item Good performance for log storage
+    \item Use case: Protocol messages, system logs, semi-structured data
+\end{itemize}
+
+\textbf{Alternatives Considered:} Elasticsearch (overkill for MVP), CouchDB (less popular)
+
+\subsubsection{Graph Database}
+
+\textbf{Selected:} Neo4j 5.x Community Edition
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Best-in-class graph database
+    \item Cypher query language for intuitive graph queries
+    \item Built-in visualization capabilities
+    \item Use case: MITRE ATT\&CK relationships, attack path analysis
+\end{itemize}
+
+\textbf{Alternatives Considered:} ArangoDB (multi-model complexity), JanusGraph (harder setup)
+
+\subsubsection{Machine Learning Frameworks}
+
+\textbf{Selected:} PyTorch 2.1 and TensorFlow 2.14
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item PyTorch for GNN implementation (PyTorch Geometric library)
+    \item TensorFlow for LSTM Autoencoder (Keras API simplicity)
+    \item PyTorch offers dynamic graphs, better for research and prototyping
+    \item TensorFlow provides mature ecosystem and TensorFlow Federated support
+\end{itemize}
+
+\textbf{Alternatives Considered:} JAX (less mature ecosystem)
+
+\subsubsection{Federated Learning Framework}
+
+\textbf{Selected:} Flower (flwr) 1.6
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Framework-agnostic (supports both PyTorch and TensorFlow)
+    \item Easy to use with clear API
+    \item Active development and community support
+    \item Built-in aggregation strategies
+\end{itemize}
+
+\textbf{Alternatives Considered:} TensorFlow Federated (TensorFlow-only), PySyft (complex setup)
+
+\subsubsection{Differential Privacy}
+
+\textbf{Selected:} Opacus 1.4 (PyTorch) and TensorFlow Privacy
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Official privacy libraries from PyTorch and TensorFlow teams
+    \item Easy integration with existing models
+    \item Automatic DP-SGD (Differentially Private Stochastic Gradient Descent)
+    \item Built-in privacy accounting and gradient clipping
+\end{itemize}
+
+\subsubsection{Frontend Framework}
+
+\textbf{Selected:} React 18 with TypeScript and Vite
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item React: Component-based architecture, large ecosystem, fast development
+    \item TypeScript: Type safety and better IDE support
+    \item Vite: Fast build times and modern tooling
+    \item Material-UI (MUI) for rapid prototyping
+\end{itemize}
+
+\subsubsection{Visualization Libraries}
+
+\textbf{Selected:} Recharts and D3.js
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Recharts: React-friendly, easy to use for standard charts
+    \item D3.js: Custom visualizations for attack graphs and network topology
+\end{itemize}
+
+\textbf{Alternatives Considered:} Chart.js (less flexible), Plotly (heavier)
+
+\subsubsection{Containerization}
+
+\textbf{Selected:} Docker 24.x with Docker Compose
+
+\textbf{Rationale:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Industry standard for containerization
+    \item Reproducible environments across development and deployment
+    \item Docker Compose for simple orchestration in demo/development
+    \item Future migration path to Kubernetes for production (out of scope for MVP)
+\end{itemize}
+
+\subsubsection{Protocol Libraries}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Modbus:} pyModbus 3.5 (most mature Python Modbus library)
+    \item \textbf{DNP3:} dnp3-python (Python bindings for OpenDNP3)
+    \item \textbf{Network:} scapy 2.5 (packet manipulation and capture)
+    \item \textbf{Simulation:} OpenPLC and Modbus simulators
+\end{itemize}
+
+\section{Component Design}
+
+\subsection{Data Sources Layer}
+
+\subsubsection{Modbus Parser Service}
+
+\textbf{Technology:} Python 3.11, pyModbus library, asyncio for concurrent operations
+
+\textbf{Responsibilities:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Connect to Modbus TCP devices on port 502
+    \item Poll registers at configurable intervals (1-10 seconds)
+    \item Parse function codes including Read Coils, Read Holding Registers, and Write operations
+    \item Publish parsed data to Kafka topic: protocol.modbus
+\end{itemize}
+
+\textbf{Output:} JSON messages containing timestamp, device identifier, function code, register address, value, and unit ID.
+
+\subsubsection{Sensor Data Simulator}
+
+\textbf{Technology:} Python 3.11, NumPy for data generation
+
+\textbf{Responsibilities:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Generate realistic sensor data (temperature, pressure, flow rates)
+    \item Inject anomalies on demand for demo scenarios
+    \item Publish to Kafka topic: sensors.data
+\end{itemize}
+
+\textbf{Simulation Modes:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Normal operation with baseline patterns
+    \item Anomaly injection (spikes, drifts, outliers)
+    \item Attack scenarios with coordinated anomalies
+\end{itemize}
+
+\subsection{Storage Layer}
+
+\subsubsection{Apache IoTDB Schema Design}
+
+Time-series storage optimized for sensor data with GORILLA encoding and SNAPPY compression. Separate databases for each facility with hierarchical organization: facility → equipment → sensor.
+
+\subsubsection{PostgreSQL Schema Design}
+
+Three primary tables:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Alerts:} Stores all security alerts with severity, confidence, affected assets, MITRE techniques, and status
+    \item \textbf{Incidents:} Groups related alerts into incidents with timeline and response actions
+    \item \textbf{FL Rounds:} Tracks federated learning rounds with metrics and client participation
+\end{itemize}
+
+\subsubsection{MongoDB Collections}
+
+Two primary collections with appropriate indexes:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Protocol Messages:} Indexed by timestamp and device for fast queries
+    \item \textbf{System Logs:} Indexed by timestamp and log level
+\end{itemize}
+
+\subsubsection{Neo4j Graph Schema}
+
+Graph structure representing MITRE ATT\&CK for ICS:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Technique Nodes:} Each node represents an attack technique with ID, name, and tactic
+    \item \textbf{LEADS\_TO Relationships:} Edges between techniques with probability weights
+    \item \textbf{Asset Nodes:} Represent critical infrastructure assets with criticality levels
+\end{itemize}
+
+
+\subsection{Detection and Analysis Layer}
+
+\subsubsection{LSTM Autoencoder}
+
+\textbf{Architecture:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Encoder: Input layer (60 time steps, 10 features) → LSTM(128 units) → LSTM(64 units) → Latent vector(64)
+    \item Decoder: Latent vector(64) → LSTM(64 units) → LSTM(128 units) → Output layer (60, 10)
+\end{itemize}
+
+\textbf{Hyperparameters:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Sequence length: 60 time steps (1 minute at 1Hz sampling)
+    \item Features: 10 (temperature, pressure, flow, voltage, current, etc.)
+    \item Batch size: 32
+    \item Learning rate: 0.001
+    \item Anomaly threshold: 95th percentile of reconstruction error
+\end{itemize}
+
+\textbf{Training Approach:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Local training: 5 epochs per federated learning round
+    \item Optimizer: Adam
+    \item Loss function: Mean Squared Error (MSE)
+\end{itemize}
+
+\textbf{Federated:} Yes - Model weights are shared across facilities through federated learning
+
+\subsubsection{Isolation Forest}
+
+\textbf{Configuration:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Number of estimators: 100 trees
+    \item Maximum samples: 256 per tree
+    \item Contamination: 0.01 (expect 1\% anomalies)
+    \item Maximum features: 1.0 (use all features)
+\end{itemize}
+
+\textbf{Features:} Same 10 features as LSTM Autoencoder
+
+\textbf{Threshold:} Anomaly score greater than 0.6
+
+\textbf{Federated:} Yes - Ensemble of trees is shared across facilities
+
+\subsubsection{Physics Rules Engine}
+
+\textbf{Rule Types:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Range Rules:} Sensor value must be within minimum and maximum bounds
+    \item \textbf{Rate Rules:} Rate of change must not exceed maximum rate
+    \item \textbf{Dependency Rules:} If condition A is true, then condition B must also be true
+    \item \textbf{Safety Rules:} Critical safety constraints that must never be violated
+\end{itemize}
+
+\textbf{Example Rules:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Reactor temperature must be between 250°C and 350°C (CRITICAL severity)
+    \item Pressure rate of change must not exceed 10 psi/minute (WARNING severity)
+    \item If inlet valve is OPEN, then pump must be RUNNING (CRITICAL severity)
+\end{itemize}
+
+\textbf{Federated:} No - Rules are facility-specific based on local equipment and processes
+
+\subsubsection{Correlation Engine}
+
+\textbf{Algorithm Overview:}
+
+The correlation engine combines alerts from multiple detection sources using temporal, spatial, and multi-source correlation:
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Temporal Correlation:} Find alerts within 5-minute time window
+    \item \textbf{Spatial Correlation:} Identify alerts affecting the same asset
+    \item \textbf{Multi-Source Correlation:} Count unique detection sources
+    \item \textbf{Confidence Calculation:} Base confidence multiplied by (1 + 0.2 × number of sources)
+    \item \textbf{Severity Determination:}
+    \begin{itemize}
+        \item 3+ sources: CRITICAL
+        \item 2 sources: HIGH
+        \item 1 source: Original alert severity
+    \end{itemize}
+\end{enumerate}
+
+\textbf{Output:} Unified alert with combined confidence, elevated severity, and list of contributing sources
+
+\subsubsection{Graph Neural Network for Attack Prediction}
+
+\textbf{Architecture:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Graph Attention Network (GAT) with 2 layers
+    \item Layer 1: GATConv with 64 dimensions and 4 attention heads
+    \item Dropout layer: 0.6 dropout rate
+    \item Layer 2: GATConv with 32 dimensions and 4 attention heads
+    \item Output layer: Dense layer with softmax activation
+\end{itemize}
+
+\textbf{Features per Technique:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item One-hot encoding of technique ID
+    \item Tactic embedding vector
+    \item Historical frequency of technique
+    \item Time since last observation
+\end{itemize}
+
+\textbf{Training:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Training data: Attack chain sequences from MITRE ATT\&CK
+    \item Learning approach: Supervised learning for next technique prediction
+    \item Loss function: Cross-entropy
+\end{itemize}
+
+\textbf{Federated:} Yes - Learns attack patterns across multiple facilities
+
+\subsection{Federated Learning Layer}
+
+\subsubsection{FL Server}
+
+\textbf{Technology:} Python 3.11, Flower framework, FastAPI for REST endpoints
+
+\textbf{Responsibilities:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Schedule federated learning rounds (every 6 hours for demo)
+    \item Distribute global model to all connected clients
+    \item Collect weight updates from participating clients
+    \item Aggregate updates using coordinate-wise median
+    \item Detect and exclude outliers (Byzantine-robust aggregation)
+    \item Track metrics and maintain round history
+\end{itemize}
+
+\textbf{API Endpoints:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Start new FL round
+    \item List all rounds with status
+    \item Get detailed round information
+    \item Retrieve round metrics
+    \item Register new clients
+    \item List connected clients
+\end{itemize}
+
+\textbf{Aggregation Strategy:}
+
+Uses FedMedian strategy with the following configuration:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Fraction fit: 1.0 (use all available clients)
+    \item Fraction evaluate: 1.0
+    \item Minimum fit clients: 3
+    \item Minimum available clients: 3
+\end{itemize}
+
+\subsubsection{FL Client}
+
+\textbf{Technology:} Python 3.11, Flower framework, Opacus for differential privacy
+
+\textbf{Responsibilities:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Receive global model from FL server
+    \item Load local training data
+    \item Train model for 5 epochs locally
+    \item Apply differential privacy using DP-SGD
+    \item Compute weight updates
+    \item Send privacy-protected updates to server
+\end{itemize}
+
+\textbf{Privacy Configuration:}
+
+Differential privacy is applied using Opacus PrivacyEngine with the following parameters:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Noise multiplier: 1.1 (calibrated for ε=2.0)
+    \item Maximum gradient norm: 1.0 (gradient clipping)
+    \item Privacy budget tracking enabled
+\end{itemize}
+
+\textbf{Training Process:}
+
+The client trains the model locally for 5 epochs. During training, the PrivacyEngine automatically clips gradients and adds calibrated Gaussian noise to ensure differential privacy guarantees.
+
+\subsubsection{Privacy Engine}
+
+\textbf{Differential Privacy Parameters:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Epsilon (ε): 2.0 (moderate privacy level)
+    \item Delta (δ): 10⁻⁵ (failure probability)
+    \item Noise mechanism: Gaussian
+    \item Gradient clipping: L2 norm with maximum value of 1.0
+\end{itemize}
+
+\textbf{Privacy Accounting:}
+
+Uses Rényi Differential Privacy (RDP) accountant to track cumulative privacy budget across multiple training rounds. The system reports the current epsilon value after each federated learning round.
+
+\subsection{API and Presentation Layer}
+
+\subsubsection{REST API}
+
+\textbf{Technology:} FastAPI with Pydantic for data validation
+
+\textbf{Key Endpoint Categories:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Alerts:} List, retrieve, update status, acknowledge
+    \item \textbf{Predictions:} List and retrieve attack predictions
+    \item \textbf{System:} Health status and performance metrics
+    \item \textbf{Federated Learning:} Round management and triggering
+    \item \textbf{Demo:} Trigger pre-scripted scenarios
+\end{itemize}
+
+\subsubsection{WebSocket API}
+
+\textbf{Real-time Updates:}
+
+WebSocket connection provides real-time updates for alerts, system status, and federated learning progress. Clients can subscribe to specific channels and receive push notifications when events occur.
+
+\subsubsection{Web Dashboard}
+
+\textbf{Technology:} React 18, TypeScript, Material-UI, Recharts, D3.js
+
+\textbf{Dashboard Pages:}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Overview Dashboard}
+    \begin{itemize}
+        \item Real-time alert feed
+        \item System status indicators
+        \item Key metrics (detection rate, FL status)
+        \item Recent attack predictions
+    \end{itemize}
+    
+    \item \textbf{Alerts Page}
+    \begin{itemize}
+        \item Filterable alert list by severity and status
+        \item Alert details modal with full information
+        \item Timeline visualization
+        \item Acknowledge and resolve actions
+    \end{itemize}
+    
+    \item \textbf{Attack Graph}
+    \begin{itemize}
+        \item Interactive MITRE ATT\&CK graph visualization
+        \item Current attack path highlighted
+        \item Predicted next steps with probabilities
+        \item Historical attack chains
+    \end{itemize}
+    
+    \item \textbf{Federated Learning}
+    \begin{itemize}
+        \item FL round history and status
+        \item Client participation tracking
+        \item Model performance metrics over time
+        \item Privacy budget tracking
+    \end{itemize}
+    
+    \item \textbf{System Monitoring}
+    \begin{itemize}
+        \item Component health status
+        \item Resource usage (CPU, memory, disk)
+        \item Message throughput statistics
+        \item Database performance metrics
+    \end{itemize}
+\end{enumerate}
+
+
+\section{Data Models}
+
+\subsection{Alert Model}
+
+\textbf{Fields:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Alert ID: Unique identifier
+    \item Timestamp: When the alert was generated
+    \item Severity: CRITICAL, HIGH, MEDIUM, or LOW
+    \item Confidence: Numerical confidence score (0-1)
+    \item Title: Brief description
+    \item Description: Detailed explanation
+    \item Affected Assets: List of impacted equipment
+    \item Techniques: MITRE ATT\&CK technique IDs
+    \item Sources: Detection methods that triggered (LSTM, IsolationForest, Physics)
+    \item Status: open, acknowledged, or resolved
+    \item Created At: Database insertion timestamp
+\end{itemize}
+
+\subsection{Prediction Model}
+
+\textbf{Fields:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Prediction ID: Unique identifier
+    \item Timestamp: When prediction was made
+    \item Current Technique: Currently observed attack technique
+    \item Next Techniques: Array of predicted next steps with:
+    \begin{itemize}
+        \item Technique ID
+        \item Technique name
+        \item Probability score
+        \item Associated tactic
+    \end{itemize}
+    \item Target Assets: Predicted target equipment
+    \item Timeframe: Estimated time until next step
+    \item Confidence: Overall prediction confidence
+\end{itemize}
+
+\subsection{FL Round Model}
+
+\textbf{Fields:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Round ID: Sequential identifier
+    \item Start Time: Round initiation timestamp
+    \item End Time: Round completion timestamp (optional)
+    \item Number of Clients: Participating facilities
+    \item Model Version: Version identifier
+    \item Metrics: Object containing:
+    \begin{itemize}
+        \item Accuracy: Model accuracy after aggregation
+        \item Loss: Training loss
+        \item Privacy Epsilon: Current privacy budget
+    \end{itemize}
+    \item Status: in\_progress, completed, or failed
+\end{itemize}
+
+\section{Error Handling Strategy}
+
+\subsection{Detection Pipeline}
+
+\textbf{Parse Errors:}
+When protocol parsing fails, the system logs the error, increments error metrics, and returns null to prevent downstream failures.
+
+\textbf{Model Errors:}
+If ML model prediction fails, the system logs the error, increments detection error metrics, and falls back to rule-based detection to maintain system availability.
+
+\subsection{Federated Learning}
+
+\textbf{Client Timeout:}
+If a client fails to respond within the timeout period, the system logs a warning and continues with available clients rather than failing the entire round.
+
+\textbf{Aggregation Errors:}
+If aggregation fails due to incompatible updates or other issues, the system logs the error and retains the previous model version to maintain system stability.
+
+\subsection{API Layer}
+
+\textbf{Validation Errors:}
+Returns HTTP 422 status code with detailed error information when request validation fails.
+
+\textbf{Database Errors:}
+Returns HTTP 500 status code with generic error message while logging detailed error information for debugging.
+
+\section{Testing Strategy}
+
+\subsection{Unit Tests}
+
+\textbf{Framework:} pytest with pytest-asyncio for async testing
+
+\textbf{Coverage Areas:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Protocol parsers (Modbus, DNP3)
+    \item Detection models (LSTM, Isolation Forest)
+    \item Correlation engine logic
+    \item API endpoints
+    \item Database operations
+\end{itemize}
+
+\textbf{Example Test:} Modbus parser test verifies correct parsing of function code, address, and count from raw byte data.
+
+\subsection{Integration Tests}
+
+\textbf{Test Scenarios:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item End-to-end data flow from parser through Kafka to detection and alert generation
+    \item FL round execution from server initiation through client training to aggregation
+    \item API and database interactions
+    \item WebSocket real-time update delivery
+\end{itemize}
+
+\subsection{Performance Tests}
+
+\textbf{Framework:} locust for load testing
+
+\textbf{Performance Targets:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Kafka throughput: 1,000 messages per second
+    \item Detection latency: Less than 30 seconds from event to alert
+    \item API response time: Less than 100ms at 95th percentile
+    \item Dashboard update latency: Less than 1 second
+\end{itemize}
+
+\subsection{Demo Scenarios}
+
+\textbf{Pre-scripted Attack Scenarios:}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Modbus Manipulation Attack}
+    \begin{itemize}
+        \item Unauthorized write to holding registers
+        \item Physics rules violation triggered
+        \item LSTM detects behavioral anomaly
+        \item Correlation engine creates high-severity alert
+    \end{itemize}
+    
+    \item \textbf{Multi-Stage Attack}
+    \begin{itemize}
+        \item Discovery phase (T0846: Remote System Discovery)
+        \item Lateral Movement (T0800)
+        \item Program Download (T0843)
+        \item GNN predicts each next step with probability scores
+        \item Demonstrates attack prediction capability
+    \end{itemize}
+    
+    \item \textbf{Federated Learning Demonstration}
+    \begin{itemize}
+        \item Facility A experiences novel attack pattern
+        \item FL round triggered automatically
+        \item Facilities B and C receive updated model
+        \item All facilities now detect the attack pattern
+        \item Demonstrates collaborative defense
+    \end{itemize}
+\end{enumerate}
+
+\section{Deployment Architecture}
+
+\subsection{Docker Compose Setup}
+
+\textbf{Service Categories:}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Message Broker:} Kafka with Zookeeper
+    \item \textbf{Databases:} IoTDB, PostgreSQL, MongoDB, Neo4j
+    \item \textbf{Application Services:} Data ingestion, detection service
+    \item \textbf{Federated Learning:} FL server and 3 FL clients (facility A, B, C)
+    \item \textbf{API and Frontend:} API gateway and React dashboard
+\end{enumerate}
+
+\textbf{Volume Management:}
+Persistent volumes for IoTDB data, PostgreSQL data, MongoDB data, and Neo4j data to preserve state across container restarts.
+
+\subsection{Resource Requirements}
+
+\textbf{Minimum System:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item CPU: 4 cores
+    \item RAM: 16 GB
+    \item Disk: 50 GB SSD
+    \item OS: Ubuntu 22.04, macOS 13+, or Windows 11 with WSL2
+\end{itemize}
+
+\textbf{Recommended System:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item CPU: 8 cores
+    \item RAM: 32 GB
+    \item Disk: 100 GB SSD
+    \item GPU: Optional (speeds up ML training)
+\end{itemize}
+
+\subsection{Deployment Steps}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item Clone repository from version control
+    \item Build all Docker containers using docker-compose build
+    \item Start all services using docker-compose up
+    \item Initialize databases using provided scripts
+    \item Load MITRE ATT\&CK data into Neo4j
+    \item Verify deployment using health check script
+    \item Access dashboard at http://localhost:3000
+\end{enumerate}
+
+\section{Development Milestones}
+
+\subsection{Week 1 (Oct 13-19): Foundation Setup}
+
+\textbf{Goal:} Infrastructure and data pipeline
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Docker Compose environment configured
+    \item Kafka cluster with 3 brokers running
+    \item All databases (IoTDB, PostgreSQL, MongoDB, Neo4j) operational
+    \item Modbus parser service implemented
+    \item Sensor data simulator created
+    \item Basic data ingestion pipeline functional
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item All containers running without errors
+    \item Data flows from simulator through Kafka to databases
+    \item Can query stored data successfully
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+\subsection{Week 2 (Oct 20-26): Core Detection}
+
+\textbf{Goal:} Implement detection models
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item LSTM Autoencoder implementation complete
+    \item Isolation Forest implementation complete
+    \item Physics Rules Engine functional
+    \item Basic Correlation Engine operational
+    \item Alert generation and storage working
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Models successfully detect anomalies in simulated data
+    \item Alerts properly stored in PostgreSQL
+    \item Correlation engine combines signals from multiple sources
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+\subsection{Week 3 (Oct 27 - Nov 2): Federated Learning Foundation}
+
+\textbf{Goal:} FL infrastructure operational
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item FL Server using Flower framework
+    \item Three FL Client instances configured
+    \item Differential Privacy integration with Opacus
+    \item Model serialization and distribution working
+    \item Basic aggregation using FedAvg strategy
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item FL round completes successfully end-to-end
+    \item All 3 clients train and upload weights
+    \item Server aggregates and distributes improved model
+    \item Privacy noise correctly applied to updates
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+\subsection{Week 4 (Nov 3-9): Attack Prediction and Graph}
+
+\textbf{Goal:} GNN and MITRE ATT\&CK integration
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Neo4j MITRE ATT\&CK graph populated
+    \item Graph Neural Network (GAT) implemented
+    \item Attack prediction service operational
+    \item Technique mapping functional
+    \item Prediction API endpoints available
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item MITRE ATT\&CK graph successfully loaded in Neo4j
+    \item GNN predicts next techniques with probability scores
+    \item Predictions accessible via REST API
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+\subsection{Week 5 (Nov 10-16): API and Dashboard}
+
+\textbf{Goal:} User interface and API complete
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item REST API using FastAPI
+    \item WebSocket for real-time updates
+    \item React dashboard with 5 pages
+    \item Alert visualization components
+    \item Attack graph visualization
+    \item FL round monitoring interface
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Dashboard displays real-time alerts correctly
+    \item Attack graph is interactive and informative
+    \item FL status visible and updating
+    \item WebSocket updates work reliably
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+
+\subsection{Week 6 (Nov 17-23): Integration and Demo Preparation}
+
+\textbf{Goal:} End-to-end integration and demo scenarios
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Three demo scenarios fully implemented
+    \item Performance optimization completed
+    \item Documentation (README, API docs, deployment guide)
+    \item Video walkthrough (5-10 minutes)
+    \item Presentation slides prepared
+    \item Bug fixes and system polish
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item All demo scenarios execute reliably
+    \item Documentation is complete and clear
+    \item Video walkthrough recorded and edited
+    \item System stable under demo conditions
+\end{itemize}
+
+\textbf{Effort Estimate:} 40 hours
+
+\subsection{Week 6.5 (Nov 24-30): Buffer and Final Polish}
+
+\textbf{Goal:} Buffer time for issues and final touches
+
+\textbf{Deliverables:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Address any remaining bugs
+    \item Performance tuning and optimization
+    \item Final documentation review and updates
+    \item Presentation rehearsal
+    \item Deployment verification on clean system
+\end{itemize}
+
+\textbf{Success Criteria:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item System ready for demonstration
+    \item All deliverables complete and polished
+    \item Team confident in demo execution
+\end{itemize}
+
+\textbf{Effort Estimate:} 20 hours
+
+\section{Total Effort Estimate}
+
+\textbf{Total Hours:} 260 hours over 6 weeks
+
+\subsection{Team Composition Options}
+
+\textbf{Option 1: Solo Developer}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item 260 hours divided by 6 weeks equals approximately 43 hours per week
+    \item Challenging but feasible with dedicated focus
+\end{itemize}
+
+\textbf{Option 2: Two Developers}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item 130 hours each over 6 weeks
+    \item Approximately 22 hours per week per person
+    \item More realistic timeline
+\end{itemize}
+
+\textbf{Option 3: Three Developers}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Approximately 87 hours each over 6 weeks
+    \item Approximately 15 hours per week per person
+    \item Comfortable pace with buffer time
+\end{itemize}
+
+\textbf{Recommended:} 2-3 developers for realistic timeline with adequate buffer
+
+\section{Risk Mitigation}
+
+\subsection{Technical Risks}
+
+\subsubsection{Risk 1: FL Integration Complexity}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Use proven Flower framework with extensive documentation
+    \item Start with simple implementation and add complexity incrementally
+    \item Allocate extra time in Week 3 for FL development
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Demonstrate FL concept with manual model sharing if automated integration proves too complex.
+
+\subsubsection{Risk 2: Performance Issues}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Conduct early performance testing in Week 2
+    \item Dedicate Week 6 time for optimization
+    \item Use scalable architecture from the start
+    \item Implement caching strategies where appropriate
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Reduce data volume for demo if performance targets cannot be met.
+
+\subsubsection{Risk 3: ML Model Training Time}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Use pre-trained models where possible
+    \item Keep datasets small for demo purposes
+    \item Consider using simpler model architectures if needed
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Reduce LSTM layers or use simpler detection models if training time is prohibitive.
+
+\subsection{Schedule Risks}
+
+\subsubsection{Risk 1: Scope Creep}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Strict adherence to MVP scope
+    \item Defer nice-to-have features to post-demo phase
+    \item Regular progress reviews to identify scope drift
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Use Week 6.5 buffer time to catch up if scope expands.
+
+\subsubsection{Risk 2: Integration Issues}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Weekly integration testing
+    \item Modular architecture allows independent development
+    \item Clear interface definitions between components
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Prioritize core features and cut secondary features if integration takes longer than expected.
+
+\subsubsection{Risk 3: Learning Curve}
+
+\textbf{Mitigation Strategy:}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Use familiar technologies where possible
+    \item Leverage extensive documentation and tutorials
+    \item Allocate Week 1 for learning and setup
+\end{itemize}
+
+\textbf{Fallback Plan:}
+Simplify complex components or use alternative technologies with gentler learning curves.
+
+\section{Success Metrics}
+
+\subsection{Technical Metrics}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Detection latency: Less than 30 seconds from event to alert
+    \item Detection accuracy: Greater than 90\% on test scenarios
+    \item False positive rate: Less than 10\% on normal operational data
+    \item FL round duration: Less than 5 minutes for 3 simulated facilities
+    \item System resource usage: Runs on machine with 16GB RAM and 4 CPU cores
+    \item Dashboard update latency: Less than 1 second for real-time updates
+    \item Kafka throughput: Handles at least 1,000 messages per second
+\end{itemize}
+
+\subsection{Deliverable Metrics}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item All 8 requirements from requirements document met
+    \item Three demo scenarios working reliably
+    \item Documentation complete and comprehensive
+    \item Video walkthrough recorded (5-10 minutes)
+    \item System deployable in less than 30 minutes on fresh system
+\end{itemize}
+
+\subsection{Demo Quality Metrics}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Demo runs without errors or crashes
+    \item Visualizations are clear and compelling
+    \item Federated learning collaboration is visible and understandable
+    \item Attack prediction is demonstrated effectively
+    \item Real-time detection is shown convincingly
+\end{itemize}
+
+\section{Simplified Feature Set for MVP}
+
+\subsection{Must Have Features (Core Demo)}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item Modbus data ingestion from simulated devices
+    \item LSTM Autoencoder for behavioral anomaly detection
+    \item Physics Rules Engine for process violation detection
+    \item Simple correlation (if both detect, elevate to high severity)
+    \item Federated Learning with 3 facilities using real Flower framework
+    \item React dashboard showing alerts and FL status
+    \item Two demo scenarios (Modbus attack and FL demonstration)
+    \item Docker Compose deployment with one-command startup
+\end{enumerate}
+
+\subsection{Nice to Have Features (If Ahead of Schedule)}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item Isolation Forest (simpler than GNN)
+    \item Basic forensics with query interface
+    \item Additional demo scenarios
+    \item More polished UI with animations
+\end{enumerate}
+
+\subsection{Features to Skip for MVP}
+
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item Attack prediction using GNN (too complex for mediocre team)
+    \item Neo4j graph database (not essential for core demo)
+    \item Multiple protocol support (Modbus only is sufficient)
+    \item Advanced correlation algorithms (keep it simple)
+    \item Red team simulator (manual attack injection is adequate)
+    \item Secure aggregation with cryptographic masking (differential privacy only)
+\end{enumerate}
+
+\section{Team Structure and Roles}
+
+\subsection{Recommended 5-Person Team Structure}
+
+\textbf{Person 1: Backend Lead}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Responsibilities: Data ingestion, Modbus parser, Kafka integration, API development
+    \item Skills needed: Python, FastAPI, basic networking
+    \item Weekly hours: 15-20
+\end{itemize}
+
+\textbf{Person 2: ML/FL Specialist}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Responsibilities: LSTM Autoencoder, Federated Learning setup, model training
+    \item Skills needed: Python, TensorFlow/PyTorch, basic ML concepts
+    \item Weekly hours: 15-20
+\end{itemize}
+
+\textbf{Person 3: Frontend Developer}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Responsibilities: React dashboard, visualizations, WebSocket integration
+    \item Skills needed: React, TypeScript, basic web development
+    \item Weekly hours: 15-20
+\end{itemize}
+
+\textbf{Person 4: DevOps/Infrastructure}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Responsibilities: Docker Compose, database configuration, deployment scripts
+    \item Skills needed: Docker, basic database administration
+    \item Weekly hours: 15-20
+\end{itemize}
+
+\textbf{Person 5: Demo/Testing/Documentation}
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Responsibilities: Demo scenarios, testing, documentation, video creation
+    \item Skills needed: Technical writing, testing, video editing
+    \item Weekly hours: 15-20
+\end{itemize}
+
+\section{Conclusion}
+
+This design document provides a comprehensive blueprint for implementing the Federated ICS Threat Correlation Engine prototype by November 30, 2025. The architecture balances ambition with practicality, focusing on demonstrating the core innovation of privacy-preserving collaborative defense through federated learning.
+
+\subsection{Key Takeaways}
+
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item \textbf{Modular Architecture:} Independent components enable parallel development
+    \item \textbf{Proven Technologies:} Battle-tested frameworks reduce implementation risk
+    \item \textbf{Realistic Scope:} MVP focuses on core capabilities that demonstrate value
+    \item \textbf{Clear Milestones:} Weekly deliverables provide measurable progress
+    \item \textbf{Risk Mitigation:} Multiple fallback plans ensure successful delivery
+\end{itemize}
+
+\subsection{Success Factors}
+
+The project's success depends on:
+\begin{itemize}[leftmargin=1cm,itemsep=0pt]
+    \item Strict scope management and resistance to feature creep
+    \item Regular team communication and progress reviews
+    \item Early identification and resolution of technical challenges
+    \item Focus on demo-ready features over production-grade polish
+    \item Effective use of buffer time in final week
+\end{itemize}
+
+\subsection{Next Steps}
+
+Following approval of this design document, the team should:
+\begin{enumerate}[leftmargin=1cm,itemsep=0pt]
+    \item Review and approve the design as a team
+    \item Assign roles and responsibilities
+    \item Set up development environments
+    \item Begin Week 1 tasks (foundation setup)
+    \item Schedule weekly progress reviews
+\end{enumerate}
+
+\vspace{1cm}
+
+\textbf{Document Version:} 1.0
+
+\textbf{Last Updated:} \today
+
+\textbf{Status:} Ready for Review
+
+\end{document}
