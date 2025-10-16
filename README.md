@@ -86,6 +86,9 @@ Educational resources and deep-dive explanations of key technical concepts used 
 
 **Key Files**:
 - `lstm-temporal-patterns.md` - How LSTM Autoencoders detect temporal anomalies
+- `lstm-practical-guide.md` - Practical guide to LSTM for ICS anomaly detection with real-world examples
+- `federated-learning-heterogeneous-data.md` - How federated learning works with different facilities and operating ranges
+- `federated-learning-missing-sensors.md` - Handling facilities with different sensor configurations
 - `isolation-forest.md` - Isolation Forest algorithm for outlier detection
 - `gnn-relationship-modeling.md` - Graph Neural Networks for attack prediction
 - `differential-privacy.md` - Differential privacy mechanisms and implementation
@@ -99,7 +102,15 @@ Educational resources and deep-dive explanations of key technical concepts used 
 - Onboarding new team members
 - Understanding ML/AI algorithms
 - Learning federated learning concepts
+- Understanding how facilities with different equipment can collaborate
 - Troubleshooting implementation issues
+
+**Key Topics Covered**:
+- LSTM architecture and gates (forget, input, output)
+- Temporal pattern detection in ICS sensor data
+- Data normalization strategies for heterogeneous facilities
+- Feature padding and masking for missing sensors
+- Attack detection examples with real scenarios
 
 ---
 
